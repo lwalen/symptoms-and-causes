@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "name": "Symptom 1"
+    },
+    {
+        "id": 2,
+        "name": "Symptom 2"
+    },
+    {
+        "id": 3,
+        "name": "Symptom 3"
+    },
+    {
+        "id": 4,
+        "name": "Symptom 4"
+    },
+    {
+        "id": 5,
+        "name": "Symptom 5"
+    },
+    {
+        "id": 6,
+        "name": "Symptom 6"
+    },
+    {
+        "id": 7,
+        "name": "Symptom 7"
+    },
+    {
+        "id": 8,
+        "name": "Symptom 8"
+    },
+    {
+        "id": 9,
+        "name": "Symptom 9"
+    }
+]
