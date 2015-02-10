@@ -1,0 +1,17 @@
+[
+    {
+        "name": "AIDS",
+		  "symptoms": ["Tiredness", "Vomitting"],
+		  "info": "AIDS is a disease that one gets from HIV."
+    },
+    {
+        "name": "Cancer",
+		  "symptoms": ["Vomitting", "Dry Mouth", "Headache"],
+		  "info": "Cancer is a variety of diseases."
+    },
+    {
+        "name": "Restless Leg Syndrome",
+		  "symptoms": ["Tiredness", "Restless Legs"],
+		  "info" : "RLS sucks, and I think I have it."
+	 }
+]
