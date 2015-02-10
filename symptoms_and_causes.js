@@ -1,14 +1,20 @@
-var error = {"no cause": "Don't have anything on that cause"}
+var error = {"no cause": "Don't have anything on that cause."}
 
+// Utility method for getting url parameters
 var params = function () {
 	// This function is anonymous, is executed immediately and 
-	// the return value is assigned to QueryString!
+	// the return value is assigned to params!
 	var query_string = {};
-	var query = window.location.search.substring(1).replace(/%20/g, ' ');
-	console.log(query);
+	var query = window.location.search.substring(1);
+
+	// I don't want to bother with this URL decoding stuff
+	query = query.replace(/%20/g, ' ');
+
 	var vars = query.split("&");
 	for (var i=0;i<vars.length;i++) {
 		var pair = vars[i].split("=");
+
+		// Chrome puts a / after the params if theres no page like index.html
 		if (pair[1] && pair[1].substr(pair[1].length - 1) === '/') {
 			pair[1] = pair[1].substr(0, pair[1].length - 1);
 		}
@@ -28,42 +34,65 @@ var params = function () {
 	return query_string;
 } ();
 
+// Utility method for intersecting arrays
 $.arrayIntersect = function(a, b)
 {
-    return $.grep(a, function(i)
-    {
-        return $.inArray(i, b) > -1;
-    });
+	return $.grep(a, function(i) {
+		return $.inArray(i, b) > -1;
+	});
 };
 
+// Turn a list of symptoms into links to symptoms
 function printSymptoms(symptoms) {
-	console.log(symptoms);
-	var html = "";
+	var html = "<ul>";
 	for (var i = 0; i < symptoms.length; i++) {
-		html += "<p><a href='?symptoms=" + symptoms[i] + "'>" + symptoms[i] + "</a></p>";
+		html += "<li><a href='?symptoms=" + symptoms[i] + "'>" + symptoms[i] + "</a></li>";
 	}
-	return html;
+	return html + "</ul>";
 }
 
-$(function() {
+// Turn a list of causes into links to causes
+function printCauses(causes) {
+	var html = "<ul>";
+	for (var i = 0; i < causes.length; i++) {
+		html += "<li><a href='?cause=" + causes[i].name + "'>" + causes[i].name + "</a> - " + causes[i].info + "</li>";
+	}
+	return html + "</ul>";
+}
 
+// Returns an array of causes that have at least one of the specified symptoms
+function getRelatedCauses(causes, symptoms) {
+	var related_causes = []
+
+	// Collect all the causes with at least one match
+	for (var i = 0; i < causes.length; i++) {
+		var intersection = $.arrayIntersect(causes[i].symptoms, symptoms);
+		if (intersection.length > 0) {
+			causes[i].matches = intersection.length;
+			related_causes.push(causes[i]);
+		}
+	}
+
+	// Sort the causes by how many matches they have, descending
+	return related_causes.sort(function(a, b) {
+		if (a.matches < b.matches) return 1;
+		if (a.matches > b.matches) return -1;
+		return 0;
+	});
+}
+
+
+$(function() {
 	$.getJSON('/data.json', function(data) {
+
+		// List of causes given symptoms
 		if (params.symptoms) {
 			var symptoms = params.symptoms.split(',');
+			var causes = getRelatedCauses(data, symptoms);
 
-			var causes = $.grep(data, function(element) {
-				var intersection = $.arrayIntersect(element.symptoms, symptoms);
-				return intersection.length > 0;
-			});
+			$('body').append(printCauses(causes));
 
-			var causes_html = "";
-
-			for (var i = 0; i < causes.length; i++) {
-				causes_html += "<p><a href='?cause=" + causes[i].name + "'>" + causes[i].name + "</a> - " + causes[i].info + "</p>";
-			}
-			$('body').append(causes_html);
-			
-
+		// Cause page
 		} else if (params.cause) {
 			var cause_name = params.cause;
 			var cause = $.grep(data, function(element) {
@@ -78,21 +107,17 @@ $(function() {
 				var symptoms = cause.symptoms;
 
 				$('body').append("<div class='info'>" + info + "</div>");
-				$('body').append("<div class='symptoms'>" + printSymptoms(symptoms) + "</div>");
+				$('body').append("<div class='symptoms'><p>Symptoms:</p>" + printSymptoms(symptoms) + "</div>");
 			}
 
+		// Main page
 		} else {
 			var symptoms = $.map(data, function(val) {
 				return val.symptoms;
 			});
 
 			symptoms = $.unique(symptoms);
-			var symptoms_html = "";
-			
-			for (var i = 0; i < symptoms.length; i++) {
-				symptoms_html += "<p><a href='?symptoms=" + symptoms[i] + "'>" + symptoms[i] + "</a></p>";
-			}
-			$('body').append(symptoms_html);
+			$('body').append(printSymptoms(symptoms));
 		}
 	});
 });
