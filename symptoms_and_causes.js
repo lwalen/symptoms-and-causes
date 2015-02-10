@@ -1,4 +1,9 @@
-var error = {"no cause": "Don't have anything on that cause."}
+
+// Used by printError
+var error_messages = {
+	"no cause":  "Sorry, I don't have anything on that cause.",
+	"no causes": "Sorry, no causes matched those symptoms."
+}
 
 // Utility method for getting url parameters
 var params = function () {
@@ -81,6 +86,29 @@ function getRelatedCauses(causes, symptoms) {
 	});
 }
 
+// Turn a cause object into HTML using its info and symptoms
+function printCause(cause) {
+	var info = cause.info;
+	var symptoms = cause.symptoms;
+
+	var html = "<div class='info'>" + info + "</div>";
+	html += "<div class='symptoms'><p>Symptoms:</p>";
+	html += printSymptoms(symptoms) + "</div>";
+
+	return html;
+}
+
+// Given an error type, create HTML with the applicable message
+function printError(error) {
+	return "<div class='error'>" + error_messages["no cause"] + "</div>";
+}
+
+// Extract a cause from date given a cause name
+function getCause(cause_name, data) {
+	return $.grep(data, function(element) {
+		return element.name === cause_name;
+	})[0];
+}
 
 $(function() {
 	$.getJSON('/data.json', function(data) {
@@ -90,24 +118,23 @@ $(function() {
 			var symptoms = params.symptoms.split(',');
 			var causes = getRelatedCauses(data, symptoms);
 
-			$('body').append(printCauses(causes));
+			if (causes.length > 0) {
+				$('body').append("<h1>Matching Causes</h1>" + printCauses(causes));
+			} else {
+				$('body').append(printError("no causes"));
+			}
 
 		// Cause page
 		} else if (params.cause) {
 			var cause_name = params.cause;
-			var cause = $.grep(data, function(element) {
-				return element.name === cause_name;
-			})[0];
+			var cause = getCause(cause_name, data);
 
 			$('body').append("<h1>" + cause_name + "</h1>");
-			if (!cause) {
-				$('body').append("<div class='error'>" + error["no cause"] + "</div>");
-			} else {
-				var info = cause.info;
-				var symptoms = cause.symptoms;
 
-				$('body').append("<div class='info'>" + info + "</div>");
-				$('body').append("<div class='symptoms'><p>Symptoms:</p>" + printSymptoms(symptoms) + "</div>");
+			if (cause) {
+				$('body').append(printCause(cause));
+			} else {
+				$('body').append(printError("no cause"));
 			}
 
 		// Main page
@@ -117,7 +144,7 @@ $(function() {
 			});
 
 			symptoms = $.unique(symptoms);
-			$('body').append(printSymptoms(symptoms));
+			$('body').append("<h1>All Symptoms</h1>" + printSymptoms(symptoms));
 		}
 	});
 });
