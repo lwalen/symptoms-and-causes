@@ -111,7 +111,7 @@ function getCause(cause_name, data) {
 }
 
 $(function() {
-	$.getJSON('/data.json', function(data) {
+	$.getJSON('data.json', function(data) {
 
 		// List of causes given symptoms
 		if (params.symptoms) {
